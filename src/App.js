@@ -3,18 +3,14 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 import NavBar from "./components/navbar.component";
-import Login from "./components/login.component";
-import Quiz from "./components/quiz.component";
-import Profile from "./components/profile.component";
+import Survey from "./components/survey.component";
 
 function App() {
     return (
         <Router>
             <NavBar />
             <Routes>
-                <Route path="/" element={<Login/>} />
-                <Route path="/quiz" element={<Quiz/>} />
-                <Route path="/profile" element={<Profile/>} />
+                <Route path="/" element={<Survey/>} />
             </Routes>
         </Router>
     );
