@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Navbar, Container } from "react-bootstrap";
+import { Navbar, Container, Nav } from "react-bootstrap";
 
 class NavBar extends Component {
     state = {};
@@ -7,7 +7,10 @@ class NavBar extends Component {
         return (
             <Navbar collapseOnSelect expand="lg" bg="dark" variant="dark">
                 <Container fluid>
-                    <Navbar.Brand href="/">Quiz App</Navbar.Brand>
+                    <Navbar.Brand href="/">Survey</Navbar.Brand>
+                    <Nav className="ms-auto">
+                        <Nav.Link href="/admin">Admin</Nav.Link>
+                    </Nav>
                 </Container>
             </Navbar>
         );

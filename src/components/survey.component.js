@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import { Container, Row, Col, Card, ListGroup, Form, Button, Spinner } from "react-bootstrap";
 import axios from "axios";
+import dayjs from "dayjs";
 
 class Survey extends Component {
     constructor(props) {
@@ -11,17 +12,19 @@ class Survey extends Component {
             response: {},
             isLoading: true,
             questions: [],
+            formStart: 0,
+            submitted: false,
         };
 
+        this.backendBaseUrl = "http://localhost:5000";
         this.onValueChange = this.onValueChange.bind(this);
         this.onChangeUsername = this.onChangeUsername.bind(this);
         this.onSubmit = this.onSubmit.bind(this);
     }
 
     componentDidMount() {
-        const backendBaseUrl = "http://localhost:5000";
         const questions = [];
-        axios.get(backendBaseUrl + "/question", { params: { noOfQuestions: 10 } }).then((resp) => {
+        axios.get(this.backendBaseUrl + "/question", { params: { noOfQuestions: 10 } }).then((resp) => {
             const response = resp.data;
             for (let i = 0; i < response.length; i++) {
                 const question = {
@@ -32,7 +35,7 @@ class Survey extends Component {
                 question.question_code = response[i].question_code;
                 questions.push(question);
             }
-            this.setState({ questions, isLoading: false });
+            this.setState({ questions, isLoading: false, formStart: dayjs() });
         });
     }
 
@@ -44,7 +47,21 @@ class Survey extends Component {
 
     onSubmit(event) {
         event.preventDefault();
-        console.log(this.state);
+        const minsDiff = dayjs().diff(this.state.formStart, "s");
+        console.log(this.state.response);
+        let responses = [];
+
+        for (const question_code in this.state.response) {
+            const question_response = this.state.response[question_code];
+            responses.push({ question_code: question_code, question_response: question_response });
+        }
+
+        const data = { user_name: this.state.username, survey_time: minsDiff, responses: responses };
+
+        axios.post(this.backendBaseUrl + "/survey/add", data).then((resp) => {
+            console.log(resp);
+            this.setState({ submitted: true });
+        });
     }
 
     checkThis(event) {
@@ -66,7 +83,7 @@ class Survey extends Component {
     }
 
     render() {
-        if (!this.state.isLoading) {
+        if (!this.state.isLoading && !this.state.submitted) {
             const questions = this.state.questions.map((question, index) => (
                 <Col sm={12} md={6} key={question.question_code} className="my-3">
                     <Card>
@@ -78,6 +95,7 @@ class Survey extends Component {
                                     <Form.Check
                                         type="radio"
                                         name={question.question_code}
+                                        id={`${question.question_code}_Strongly_Disagree`}
                                         label="Strongly Disagree"
                                         value="Strongly Disagree"
                                         checked={this.state.response[question.question_code] === "Strongly Disagree"}
@@ -88,6 +106,7 @@ class Survey extends Component {
                                     <Form.Check
                                         type="radio"
                                         name={question.question_code}
+                                        id={`${question.question_code}_Disagree`}
                                         label="Disagree"
                                         value="Disagree"
                                         checked={this.state.response[question.question_code] === "Disagree"}
@@ -98,6 +117,7 @@ class Survey extends Component {
                                     <Form.Check
                                         type="radio"
                                         name={question.question_code}
+                                        id={`${question.question_code}_Slightly_Disagree`}
                                         label="Slightly Disagree"
                                         value="Slightly Disagree"
                                         checked={this.state.response[question.question_code] === "Slightly Disagree"}
@@ -108,6 +128,7 @@ class Survey extends Component {
                                     <Form.Check
                                         type="radio"
                                         name={question.question_code}
+                                        id={`${question.question_code}_Netural`}
                                         label="Netural"
                                         value="Netural"
                                         checked={this.state.response[question.question_code] === "Netural"}
@@ -118,6 +139,7 @@ class Survey extends Component {
                                     <Form.Check
                                         type="radio"
                                         name={question.question_code}
+                                        id={`${question.question_code}_Slightly_Agree`}
                                         label="Slightly Agree"
                                         value="Slightly Agree"
                                         checked={this.state.response[question.question_code] === "Slightly Agree"}
@@ -128,6 +150,7 @@ class Survey extends Component {
                                     <Form.Check
                                         type="radio"
                                         name={question.question_code}
+                                        id={`${question.question_code}_Agree`}
                                         label="Agree"
                                         value="Agree"
                                         checked={this.state.response[question.question_code] === "Agree"}
@@ -138,6 +161,7 @@ class Survey extends Component {
                                     <Form.Check
                                         type="radio"
                                         name={question.question_code}
+                                        id={`${question.question_code}_Strongly_Agree`}
                                         label="Strongly Agree"
                                         value="Strongly Agree"
                                         checked={this.state.response[question.question_code] === "Strongly Agree"}
@@ -174,11 +198,23 @@ class Survey extends Component {
                     </Form>
                 </Container>
             );
-        } else {
+        } else if (this.state.isLoading) {
             return (
                 <Row className="justify-content-center mt-5">
                     <Col sm={12} md={6} className="d-flex justify-content-center">
                         <Spinner animation="border" role="status"></Spinner>
+                    </Col>
+                </Row>
+            );
+        } else {
+            return (
+                <Row className="justify-content-center mt-5">
+                    <Col sm={12} md={6} className="d-flex justify-content-center">
+                        <Card>
+                            <Card.Body>
+                                <Card.Title>Thank you for submitting form!</Card.Title>
+                            </Card.Body>
+                        </Card>
                     </Col>
                 </Row>
             );
